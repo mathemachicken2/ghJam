@@ -3,10 +3,16 @@ using UnityEngine;
 using UnityEngine.InputSystem;
 using System.Collections;
 
+[RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
     public float moveSpeed = 5f;
+
+    [Header("Gravity")]
+    public float gravity = -20f;
+
+    private float verticalVelocity;
 
     [Header("Camera")]
     public Transform playerCamera;
@@ -35,11 +41,11 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
+        Debug.Log("Grounded: " + controller.isGrounded);
         HandleMovement();
         HandleCamera();
         HandleTurnAround();
     }
-
 
     private void HandleMovement()
     {
@@ -66,12 +72,24 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 move = (forward * input.y + right * input.x).normalized;
 
-        if (controller != null)
-            controller.Move(move * moveSpeed * Time.deltaTime);
+        // Apply gravity
+        if (controller.isGrounded && verticalVelocity < 0)
+        {
+            verticalVelocity = -2f;
+        }
         else
-            transform.position += move * moveSpeed * Time.deltaTime;
-    }
+        {
+            verticalVelocity += gravity * Time.deltaTime;
+        }
 
+
+        verticalVelocity = Mathf.Max(verticalVelocity, -30f);
+        // Combine horizontal movement and gravity
+        Vector3 finalMovement = move * moveSpeed;
+        finalMovement.y = verticalVelocity;
+
+        controller.Move(finalMovement * Time.deltaTime);
+    }
 
     private void HandleCamera()
     {
@@ -97,9 +115,8 @@ public class PlayerMovement : MonoBehaviour
     private void HandleTurnAround()
     {
         if (Keyboard.current != null &&
-            Keyboard.current.leftShiftKey.wasPressedThisFrame ||
-            Keyboard.current != null &&
-            Keyboard.current.rightShiftKey.wasPressedThisFrame)
+            (Keyboard.current.leftShiftKey.wasPressedThisFrame ||
+             Keyboard.current.rightShiftKey.wasPressedThisFrame))
         {
             if (!isTurning)
                 StartCoroutine(TurnAround());
