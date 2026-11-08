@@ -11,6 +11,8 @@ public class WaypointMover : MonoBehaviour
 
     private Vector3 startPosition;
 
+    public DeathManager deathManager;
+
     private void Start()
     {
         startPosition = transform.position;
@@ -21,6 +23,7 @@ public class WaypointMover : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
+            deathManager.Die();
             Debug.Log("Player Dead");
         }
     }
