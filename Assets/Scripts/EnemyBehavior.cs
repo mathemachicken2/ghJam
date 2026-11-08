@@ -3,6 +3,8 @@ using UnityEngine;
 using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
+
+
 public class EnemyBehaviour : MonoBehaviour
 {
     [System.Serializable]
@@ -34,7 +36,7 @@ public class EnemyBehaviour : MonoBehaviour
 
     private int nextWaypointIndex = 0;
 
-
+    public DeathManager deathManager;
 
     private void Start()
     {
@@ -84,8 +86,14 @@ public class EnemyBehaviour : MonoBehaviour
         controller.Move(movement * Time.deltaTime);
     }
 
-    
 
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (hit.gameObject.CompareTag("Player"))
+        {
+            deathManager.Die();
+        }
+    }
     private void CheckRespawnPoints()
     {
         if (player == null || nextWaypointIndex >= respawnPoints.Length)

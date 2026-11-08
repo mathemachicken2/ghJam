@@ -14,6 +14,8 @@ public class BackAndForthMover : MonoBehaviour
     private Vector3 targetPosition;
     private bool movingToWaypoint = true;
 
+    public DeathManager deathManager;
+
     private void Start()
     {
         startPosition = transform.position;
@@ -48,6 +50,7 @@ public class BackAndForthMover : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
+            deathManager.Die();
             Debug.Log("Player Died");
         }
     }
