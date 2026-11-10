@@ -47,6 +47,20 @@ public class EnemyBehaviour : MonoBehaviour
 
     public float respawnHeightOffset = 0.3f;
 
+    private bool hasCaughtPlayer;
+    public Transform playerCamera;
+    
+    public float cameraZoomDuration = 1.2f;
+
+    public Transform enemyFaceTarget;
+
+    public float cameraDistance = 1.2f;
+    public float cameraHeightOffset = 0.2f;
+
+    public float shakeIntensity = 0.04f;
+    public float shakeSpeed = 25f;
+    public float shakeDuration = 0.5f;
+
     private void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -56,6 +70,10 @@ public class EnemyBehaviour : MonoBehaviour
 
     private void Update()
     {
+
+        if (hasCaughtPlayer)
+            return;
+
         CheckRespawnPoints();
         FollowPlayer();
     }
@@ -100,12 +118,12 @@ public class EnemyBehaviour : MonoBehaviour
             rightDistance = rightHit.distance;
         }
 
-        // Calculate direction towards corridor centre
+        
         float centering = rightDistance - leftDistance;
 
         Vector3 centeringDirection = right * centering;
 
-        // Combine player direction and centering direction
+        
         Vector3 finalDirection =
             playerDirection + centeringDirection * centeringStrength;
 
@@ -124,7 +142,7 @@ public class EnemyBehaviour : MonoBehaviour
             );
         }
 
-        // Apply gravity
+       
         if (controller.isGrounded)
         {
             verticalVelocity = -2f;
@@ -143,10 +161,86 @@ public class EnemyBehaviour : MonoBehaviour
 
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        if (hit.gameObject.CompareTag("Player"))
+        if (hit.gameObject.CompareTag("Player") && !hasCaughtPlayer)
+        {
+            hasCaughtPlayer = true;
+            StartCoroutine(CatchPlayerSequence());
+        }
+    }
+
+    private IEnumerator CatchPlayerSequence()
+    {
+        // Disable player movement
+        PlayerMovement playerMovement = player.GetComponent<PlayerMovement>();
+
+        if (playerMovement != null)
+            playerMovement.enabled = false;
+
+        if (playerCamera == null || enemyFaceTarget == null)
         {
             deathManager.Die();
+            yield break;
         }
+
+        Vector3 startPosition = playerCamera.position;
+        Quaternion startRotation = playerCamera.rotation;
+
+        // Destination is the waypoint in front of the enemy's face
+        Vector3 destination = enemyFaceTarget.position;
+
+        Quaternion targetRotation = Quaternion.LookRotation(
+            transform.position + Vector3.up * cameraHeightOffset - destination
+        ) * Quaternion.Euler(-60f, 0f, 0f);
+
+        float elapsed = 0f;
+        deathManager.Die();
+
+        while (elapsed < cameraZoomDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = Mathf.Clamp01(elapsed / cameraZoomDuration);
+            float smoothT = Mathf.SmoothStep(0f, 1f, t);
+
+            playerCamera.position = Vector3.Lerp(
+                startPosition,
+                destination,
+                smoothT
+            );
+
+            playerCamera.rotation = Quaternion.Slerp(
+                startRotation,
+                targetRotation,
+                smoothT
+            );
+
+            yield return null;
+        }
+
+        playerCamera.position = destination;
+        playerCamera.rotation = targetRotation;
+
+        // Shake camera after facing the enemy
+        float shakeElapsed = 0f;
+
+        while (shakeElapsed < shakeDuration)
+        {
+            shakeElapsed += Time.deltaTime;
+
+            float shakeX = Random.Range(-1f, 1f) * shakeIntensity;
+            float shakeY = Random.Range(-1f, 1f) * shakeIntensity;
+
+            playerCamera.position = destination +
+                playerCamera.right * shakeX +
+                playerCamera.up * shakeY;
+
+            yield return null;
+        }
+
+        // Restore exact camera position
+        playerCamera.position = destination;
+
+       
     }
     private void CheckRespawnPoints()
     {
