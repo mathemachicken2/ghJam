@@ -610,6 +610,13 @@ MonoBehaviour:
   respawnParticlePrefab: {fileID: 7693288880493265306, guid: ea86f8c78aa720d46b6b86c6f8fc807b, type: 3}
   gravity: -9.8
   deathManager: {fileID: 1301877159}
+  wallCheckDistance: 2
+  centeringStrength: 3
+  wallAvoidanceDistance: 0.8
+  wallLayer:
+    serializedVersion: 2
+    m_Bits: 33
+  respawnHeightOffset: 2
 --- !u!143 &255610575
 CharacterController:
   m_ObjectHideFlags: 0
@@ -628,13 +635,13 @@ CharacterController:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Height: 15
-  m_Radius: 5
+  m_Height: 1.8
+  m_Radius: 0.25
   m_SlopeLimit: 45
   m_StepOffset: 0.3
-  m_SkinWidth: 0.08
+  m_SkinWidth: 0.03
   m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 6, z: 0}
+  m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!1 &288809166
 GameObject:
   m_ObjectHideFlags: 0
@@ -691,7 +698,7 @@ Transform:
   m_GameObject: {fileID: 329224210}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.16, y: -3.17, z: -5.48}
+  m_LocalPosition: {x: -4.61, y: -2.38, z: -6.06}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2919,7 +2926,7 @@ Transform:
   m_GameObject: {fileID: 1423979626}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.47, y: -2.76, z: 57.06}
+  m_LocalPosition: {x: -0.47, y: -0.6, z: 57.06}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

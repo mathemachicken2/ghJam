@@ -38,6 +38,15 @@ public class EnemyBehaviour : MonoBehaviour
 
     public DeathManager deathManager;
 
+    
+    public float wallCheckDistance = 2f;
+    public float centeringStrength = 3f;
+    public float wallAvoidanceDistance = 0.8f;
+    public LayerMask wallLayer;
+
+
+    public float respawnHeightOffset = 0.3f;
+
     private void Start()
     {
         controller = GetComponent<CharacterController>();
@@ -56,12 +65,57 @@ public class EnemyBehaviour : MonoBehaviour
         if (player == null)
             return;
 
-        Vector3 direction = player.position - transform.position;
-        direction.y = 0f;
+        // Direction towards player
+        Vector3 playerDirection = player.position - transform.position;
+        playerDirection.y = 0f;
 
-        if (direction.sqrMagnitude > 0.01f)
+        if (playerDirection.sqrMagnitude > 0.01f)
         {
-            Quaternion targetRotation = Quaternion.LookRotation(direction);
+            playerDirection.Normalize();
+        }
+
+        // Check walls on both sides
+        Vector3 right = transform.right;
+
+        float leftDistance = wallCheckDistance;
+        float rightDistance = wallCheckDistance;
+
+        if (Physics.Raycast(
+            transform.position,
+            -right,
+            out RaycastHit leftHit,
+            wallCheckDistance,
+            wallLayer))
+        {
+            leftDistance = leftHit.distance;
+        }
+
+        if (Physics.Raycast(
+            transform.position,
+            right,
+            out RaycastHit rightHit,
+            wallCheckDistance,
+            wallLayer))
+        {
+            rightDistance = rightHit.distance;
+        }
+
+        // Calculate direction towards corridor centre
+        float centering = rightDistance - leftDistance;
+
+        Vector3 centeringDirection = right * centering;
+
+        // Combine player direction and centering direction
+        Vector3 finalDirection =
+            playerDirection + centeringDirection * centeringStrength;
+
+        finalDirection.y = 0f;
+
+        if (finalDirection.sqrMagnitude > 0.01f)
+        {
+            finalDirection.Normalize();
+
+            Quaternion targetRotation = Quaternion.LookRotation(finalDirection);
 
             transform.rotation = Quaternion.Slerp(
                 transform.rotation,
@@ -143,7 +197,7 @@ public class EnemyBehaviour : MonoBehaviour
         // Move enemy to spawn position
         controller.enabled = false;
 
-        transform.position = spawnPoint.position;
+        transform.position = spawnPoint.position + Vector3.up * respawnHeightOffset;
         transform.rotation = spawnPoint.rotation;
 
         controller.enabled = true;
