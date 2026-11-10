@@ -1,6 +1,7 @@
 
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
 using System.Collections;
 
 [RequireComponent(typeof(CharacterController))]
@@ -20,6 +21,15 @@ public class PlayerMovement : MonoBehaviour
     public float verticalLimit = 90f;
     public float horizontalLimit = 90f;
 
+   
+    public float cameraFreezeDuration = 2f;
+
+    private bool cameraControlEnabled = false;
+
+    [Header("Start Fade")]
+    public Image startOverlay;
+    public float fadeDuration = 2f;
+
     [Header("Turn Around")]
     public float turnDuration = 0.4f;
 
@@ -37,11 +47,58 @@ public class PlayerMovement : MonoBehaviour
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+
+       
+
+        // Set white overlay at game start
+        if (startOverlay != null)
+        {
+            startOverlay.gameObject.SetActive(true);
+            startOverlay.color = Color.white;
+        }
+
+        StartCoroutine(StartupSequence());
+    }
+
+    private IEnumerator StartupSequence()
+    {
+        // Start fading the white overlay
+        if (startOverlay != null)
+        {
+            StartCoroutine(FadeStartOverlay());
+        }
+
+        // Keep camera frozen
+        yield return new WaitForSeconds(cameraFreezeDuration);
+
+        // Enable camera movement
+        cameraControlEnabled = true;
+    }
+
+    private IEnumerator FadeStartOverlay()
+    {
+        float elapsed = 0f;
+
+        Color color = startOverlay.color;
+
+        while (elapsed < fadeDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            float alpha = 1f - Mathf.Clamp01(elapsed / fadeDuration);
+
+            startOverlay.color = new Color(1f, 1f, 1f, alpha);
+
+            yield return null;
+        }
+
+        startOverlay.color = new Color(1f, 1f, 1f, 0f);
+
+        startOverlay.gameObject.SetActive(false);
     }
 
     private void Update()
     {
-        Debug.Log("Grounded: " + controller.isGrounded);
         HandleMovement();
         HandleCamera();
         HandleTurnAround();
@@ -59,11 +116,9 @@ public class PlayerMovement : MonoBehaviour
             if (Keyboard.current.dKey.isPressed) input.x += 1;
         }
 
-        // Get movement directions from the camera
         Vector3 forward = playerCamera.forward;
         Vector3 right = playerCamera.right;
 
-        // Keep movement horizontal
         forward.y = 0f;
         right.y = 0f;
 
@@ -72,7 +127,6 @@ public class PlayerMovement : MonoBehaviour
 
         Vector3 move = (forward * input.y + right * input.x).normalized;
 
-        // Apply gravity
         if (controller.isGrounded && verticalVelocity < 0)
         {
             verticalVelocity = -2f;
@@ -82,9 +136,8 @@ public class PlayerMovement : MonoBehaviour
             verticalVelocity += gravity * Time.deltaTime;
         }
 
-
         verticalVelocity = Mathf.Max(verticalVelocity, -30f);
-        // Combine horizontal movement and gravity
+
         Vector3 finalMovement = move * moveSpeed;
         finalMovement.y = verticalVelocity;
 
@@ -93,7 +146,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void HandleCamera()
     {
-        if (isTurning || Mouse.current == null)
+        if (!cameraControlEnabled || isTurning || Mouse.current == null)
             return;
 
         Vector2 mouseDelta = Mouse.current.delta.ReadValue();
@@ -101,19 +154,24 @@ public class PlayerMovement : MonoBehaviour
         float mouseX = mouseDelta.x * mouseSensitivity * Time.deltaTime;
         float mouseY = mouseDelta.y * mouseSensitivity * Time.deltaTime;
 
-        // Vertical camera rotation
         xRotation -= mouseY;
         xRotation = Mathf.Clamp(xRotation, -verticalLimit, verticalLimit);
 
-        // Horizontal camera rotation
         yRotation += mouseX;
         yRotation = Mathf.Clamp(yRotation, -horizontalLimit, horizontalLimit);
 
-        playerCamera.localRotation = Quaternion.Euler(xRotation, yRotation, 0f);
+        playerCamera.localRotation = Quaternion.Euler(
+            xRotation,
+            yRotation,
+            0f
+        );
     }
 
     private void HandleTurnAround()
     {
+        if (!cameraControlEnabled)
+            return;
+
         if (Keyboard.current != null &&
             (Keyboard.current.leftShiftKey.wasPressedThisFrame ||
              Keyboard.current.rightShiftKey.wasPressedThisFrame))
@@ -150,7 +208,6 @@ public class PlayerMovement : MonoBehaviour
 
         transform.rotation = Quaternion.Euler(0f, targetRotation, 0f);
 
-        // Reset horizontal camera angle after turning
         yRotation = 0f;
 
         playerCamera.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
