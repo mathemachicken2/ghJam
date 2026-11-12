@@ -41,6 +41,8 @@ public class BaconInteraction : MonoBehaviour
     public float moveForwardDistance = 0.3f;
     public float moveDuration = 0.3f;
 
+    public bool HasWon { get; private set; }
+
     private void Start()
     {
         if (interactionPrompt != null)
@@ -93,6 +95,7 @@ public class BaconInteraction : MonoBehaviour
             Keyboard.current.eKey.wasPressedThisFrame)
         {
             hasStarted = true;
+            HasWon = true;
 
             if (interactionPrompt != null)
                 interactionPrompt.gameObject.SetActive(false);
