@@ -20,6 +20,9 @@ public class EnemyBehaviour : MonoBehaviour
     [Header("Enemy Movement")]
     public float moveSpeed = 2f;
     public float rotationSpeed = 5f;
+    public float chaseSpeed = 8f;
+    public float speedIncreaseDistance = 5f;
+    public float speedDecreaseDistance = 3f;
 
     [Header("Respawn Points")]
     public RespawnPoint[] respawnPoints;
@@ -75,9 +78,29 @@ public class EnemyBehaviour : MonoBehaviour
             return;
 
         CheckRespawnPoints();
+        UpdateEnemySpeed();
         FollowPlayer();
     }
 
+    private void UpdateEnemySpeed()
+    {
+        if (player == null)
+            return;
+
+        float distance = Vector3.Distance(
+            transform.position,
+            player.position
+        );
+
+        if (distance >= speedIncreaseDistance)
+        {
+            moveSpeed = chaseSpeed;
+        }
+        else if (distance <= speedDecreaseDistance)
+        {
+            moveSpeed = 2f;
+        }
+    }
     private void FollowPlayer()
     {
         if (player == null)
