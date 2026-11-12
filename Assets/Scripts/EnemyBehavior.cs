@@ -253,14 +253,22 @@ public class EnemyBehaviour : MonoBehaviour
             currentPoint.enemyWaypoint == null)
             return;
 
+        float detectionRadius = 4f;
+
+        Vector3 playerPosition = player.position;
+        Vector3 waypointPosition = currentPoint.playerWaypoint.position;
+
+        // Ignore height differences
+        playerPosition.y = 0f;
+        waypointPosition.y = 0f;
+
         float distance = Vector3.Distance(
-            player.position,
-            currentPoint.playerWaypoint.position
+            playerPosition,
+            waypointPosition
         );
 
-        if (distance <= 2f)
+        if (distance <= detectionRadius)
         {
-            // Move to the next waypoint immediately
             nextWaypointIndex++;
 
             // Start respawn sequence

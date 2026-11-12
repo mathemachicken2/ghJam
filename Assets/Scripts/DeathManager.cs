@@ -17,6 +17,12 @@ public class DeathManager : MonoBehaviour
     public PlayerMovement playerMovement;
 
     private bool hasDied = false;
+   
+
+    public ParticleSystem deathParticlePrefab;
+    public Transform particleSpawnPoint;
+
+    public BaconInteraction baconInteraction;
 
     private void Start()
     {
@@ -34,10 +40,21 @@ public class DeathManager : MonoBehaviour
 
     public void Die()
     {
+        if (baconInteraction != null && baconInteraction.HasWon)
+            return;
         if (hasDied)
             return;
 
         hasDied = true;
+
+        if (deathParticlePrefab != null)
+        {
+            Vector3 spawnPosition = particleSpawnPoint != null
+                ? particleSpawnPoint.position
+                : transform.position;
+
+            Instantiate(deathParticlePrefab, spawnPosition, Quaternion.identity);
+        }
 
         if (playerMovement != null)
             playerMovement.enabled = false;
