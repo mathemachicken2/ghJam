@@ -216,6 +216,7 @@ public class EnemyBehaviour : MonoBehaviour
         ) * Quaternion.Euler(-60f, 0f, 0f);
 
         float elapsed = 0f;
+        AudioManager.Instance.PlayDeathByEnemy();
         deathManager.Die();
 
         while (elapsed < cameraZoomDuration)
@@ -295,6 +296,8 @@ public class EnemyBehaviour : MonoBehaviour
             nextWaypointIndex++;
 
             // Start respawn sequence
+            if (AudioManager.Instance != null)
+                AudioManager.Instance.PlayEnemySpawn();
             RespawnEnemy(currentPoint.enemyWaypoint);
         }
     }

@@ -171,6 +171,9 @@ public class BaconInteraction : MonoBehaviour
         Vector3 baconPosition = originalBacon.transform.position;
         Quaternion baconRotation = originalBacon.transform.rotation;
 
+        if (AudioManager.Instance != null)
+            AudioManager.Instance.PlayEating();
+
         // Stop original bacon rotation
         ConstantRotation rotation = originalBacon.GetComponent<ConstantRotation>();
 
