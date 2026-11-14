@@ -46,7 +46,7 @@ public class DeathManager : MonoBehaviour
             return;
 
         hasDied = true;
-
+        AudioManager.Instance.PlayDeathByTrap();
         if (deathParticlePrefab != null)
         {
             Vector3 spawnPosition = particleSpawnPoint != null
