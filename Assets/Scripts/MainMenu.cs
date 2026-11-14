@@ -3,19 +3,24 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 
 public class MainMenu : MonoBehaviour
 {
-    [Header("Panels")]
+   
     public GameObject menuPanel;
     public GameObject optionsPanel;
 
-    [Header("Scene")]
+    
     public string gameSceneName = "SampleScene";
 
-    [Header("Fade")]
+    
     public Image fadeImage;
     public float fadeDuration = 1.5f;
+    public float whiteScreenDelay = 3f;
+
+
+    public TMP_Text instructionText;
 
     private void Start()
     {
@@ -25,12 +30,13 @@ public class MainMenu : MonoBehaviour
         menuPanel.SetActive(true);
         optionsPanel.SetActive(false);
 
-        // Start with a transparent white overlay
         fadeImage.gameObject.SetActive(true);
 
         Color color = Color.white;
         color.a = 0f;
         fadeImage.color = color;
+
+        instructionText.gameObject.SetActive(false);
     }
 
     public void PlayGame()
@@ -48,12 +54,7 @@ public class MainMenu : MonoBehaviour
         {
             elapsed += Time.deltaTime;
 
-            color.a = Mathf.Lerp(
-                0f,
-                1f,
-                elapsed / fadeDuration
-            );
-
+            color.a = Mathf.Lerp(0f, 1f, elapsed / fadeDuration);
             fadeImage.color = color;
 
             yield return null;
@@ -61,6 +62,14 @@ public class MainMenu : MonoBehaviour
 
         color.a = 1f;
         fadeImage.color = color;
+
+       
+        
+
+       
+        instructionText.gameObject.SetActive(true);
+        instructionText.text = "Use SHIFT to rotate quickly";
+        yield return new WaitForSeconds(whiteScreenDelay);
 
         SceneManager.LoadScene(gameSceneName);
     }
